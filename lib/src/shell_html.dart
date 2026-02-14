@@ -1,8 +1,8 @@
 import 'mermaid_theme.dart';
 
-/// The CDN URL for the beautiful-mermaid browser bundle.
-const cdnUrl =
-    'https://cdn.jsdelivr.net/npm/beautiful-mermaid@0.1.3/dist/beautiful-mermaid.browser.global.js';
+/// Asset path for the beautiful-mermaid browser bundle (bundled with package).
+const jsAssetPath =
+    'packages/beautiful_mermaid/assets/beautiful-mermaid.browser.global.js';
 
 /// CSS position rules for each [MermaidControlsPosition].
 String _ctrlPositionCss(MermaidControlsPosition pos) {
@@ -52,6 +52,7 @@ const _fitIcon =
 /// `window.addEventListener("message")` (for web iframe).
 /// When false, it uses `FlutterBridge.postMessage` (for native WebView).
 String buildShellHtml({
+  required String jsContent,
   required MermaidColors colors,
   required bool panZoom,
   required MermaidControlsPosition controlsPosition,
@@ -104,7 +105,7 @@ String buildShellHtml({
       <button onclick="fitView()" title="Fit to screen">$_fitIcon</button>
     </div>
   </div>
-  <script src="$cdnUrl"></script>
+  <script>$jsContent</script>
   <script>
     var t = document.getElementById("t");
     var v = document.getElementById("v");
@@ -240,13 +241,8 @@ ${usePostMessage ? '''
       } catch(ex) {}
     });
 
-    // Signal ready once library has loaded.
-    var readyCheck = setInterval(function() {
-      if (window.beautifulMermaid) {
-        clearInterval(readyCheck);
-        window.parent.postMessage(JSON.stringify({type:"ready"}), "*");
-      }
-    }, 50);
+    // Signal ready — library is inline, so it's immediately available.
+    window.parent.postMessage(JSON.stringify({type:"ready"}), "*");
 ''' : ''}  </script>
 </body>
 </html>''';

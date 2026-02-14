@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'mermaid_theme.dart';
@@ -106,14 +107,20 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
       );
 
     _trySetBackground();
+    _loadAndInjectHtml();
+  }
+
+  Future<void> _loadAndInjectHtml() async {
+    final jsContent = await rootBundle.loadString(jsAssetPath);
+    if (!mounted) return;
     _controller.loadHtmlString(
       buildShellHtml(
+        jsContent: jsContent,
         colors: widget.colors,
         panZoom: widget.panZoom,
         controlsPosition: widget.controlsPosition,
         usePostMessage: false,
       ),
-      baseUrl: 'https://cdn.jsdelivr.net',
     );
   }
 

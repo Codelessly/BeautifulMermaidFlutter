@@ -3,6 +3,7 @@ import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:web/web.dart' as web;
 
 import 'mermaid_theme.dart';
@@ -100,11 +101,18 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     _messageHandler = _onWindowMessage.toJS;
     web.window.addEventListener('message', _messageHandler);
 
+    _loadAndInjectHtml();
+  }
+
+  Future<void> _loadAndInjectHtml() async {
+    final jsContent = await rootBundle.loadString(jsAssetPath);
+    if (!mounted) return;
     // Set srcdoc after a microtask to ensure the iframe is in the DOM.
     Future.microtask(() {
       (_iframe as web.HTMLElement).setAttribute(
         'srcdoc',
         buildShellHtml(
+          jsContent: jsContent,
           colors: widget.colors,
           panZoom: widget.panZoom,
           controlsPosition: widget.controlsPosition,
