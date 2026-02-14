@@ -81,9 +81,8 @@ String buildShellHtml({
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: $bgHex; }
     #v { width: 100%; height: 100%; overflow: hidden; position: relative; touch-action: none; }
-    #t { transform-origin: 0 0; will-change: transform; width: 100%; height: 100%;
-         display: flex; justify-content: center; align-items: center; }
-    #t svg { max-width: 100%; max-height: 100%; display: block; }
+    #t { transform-origin: 0 0; }
+    #t svg { display: block; }
     #ctrl { position: absolute; $ctrlPos display: ${pz ? 'flex' : 'none'};
             flex-direction: $flexDir; gap: 4px; opacity: 0.6; transition: opacity 0.2s; z-index: 10; }
     #ctrl:hover { opacity: 1; }
@@ -112,14 +111,27 @@ String buildShellHtml({
     var ctrl = document.getElementById("ctrl");
     var pzEnabled = $pz;
     var sc = 1, px = 0, py = 0;
-    var minSc = 0.2, maxSc = 8;
+    var minSc = 0.1, maxSc = 10;
+    var svgW = 0, svgH = 0;
 
     function applyTx() {
-      t.style.transform = "translate(" + px + "px," + py + "px) scale(" + sc + ")";
+      var svg = t.querySelector("svg");
+      if (svg && svgW > 0) {
+        svg.setAttribute("width", svgW * sc);
+        svg.setAttribute("height", svgH * sc);
+      }
+      t.style.transform = "translate(" + px + "px," + py + "px)";
     }
 
     function fitView() {
-      sc = 1; px = 0; py = 0;
+      if (svgW <= 0 || svgH <= 0) { sc = 1; px = 0; py = 0; applyTx(); return; }
+      var vw = v.clientWidth;
+      var vh = v.clientHeight;
+      sc = Math.min(vw / svgW, vh / svgH, 1);
+      var sw = svgW * sc;
+      var sh = svgH * sc;
+      px = (vw - sw) / 2;
+      py = (vh - sh) / 2;
       applyTx();
     }
 
@@ -205,6 +217,11 @@ String buildShellHtml({
     function render(src, opts) {
       beautifulMermaid.renderMermaid(src, opts).then(function(svg) {
         t.innerHTML = svg;
+        var el = t.querySelector("svg");
+        if (el) {
+          svgW = parseFloat(el.getAttribute("width")) || el.getBoundingClientRect().width;
+          svgH = parseFloat(el.getAttribute("height")) || el.getBoundingClientRect().height;
+        }
         fitView();
         if ($sendGuard) $sendMsg(JSON.stringify({type:"rendered"}));
       }).catch(function(e) {
