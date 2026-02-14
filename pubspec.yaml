@@ -1,0 +1,29 @@
+name: beautiful_mermaid
+description: >
+  Render beautiful Mermaid diagrams in Flutter. Supports flowcharts, sequence,
+  state, class, and ER diagrams with 15 built-in themes.
+version: 0.1.0
+homepage: https://github.com/lukilabs/beautiful-mermaid
+repository: https://github.com/lukilabs/beautiful-mermaid
+issue_tracker: https://github.com/lukilabs/beautiful-mermaid/issues
+topics:
+  - mermaid
+  - diagrams
+  - charts
+  - webview
+  - visualization
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  web: ^1.1.1
+  webview_flutter: ^4.13.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
