@@ -33,6 +33,12 @@ class MermaidDiagram extends StatefulWidget {
   /// Whether to render with a transparent background.
   final bool transparent;
 
+  /// When `true`, the diagram's own inline `style` directives and
+  /// `%%{ init: { 'theme': ... } }%%` are preserved instead of being
+  /// overridden by the [colors] theme. The [colors.bg] is still used for
+  /// the page background. Defaults to `false`.
+  final bool useSourceTheme;
+
   /// Whether to enable pan and zoom controls. Defaults to `true`.
   final bool panZoom;
 
@@ -59,6 +65,7 @@ class MermaidDiagram extends StatefulWidget {
     this.font = 'Inter',
     this.padding = 40,
     this.transparent = false,
+    this.useSourceTheme = false,
     this.panZoom = true,
     this.controlsPosition = MermaidControlsPosition.bottomRight,
     this.onRendered,
@@ -186,16 +193,29 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     if (mounted) setState(() => _isLoading = true);
 
     final bgHex = MermaidColors.colorToHex(widget.colors.bg);
-    final msg = jsonEncode({
-      'action': 'render',
-      'source': widget.source,
-      'bg': bgHex,
-      'options': {
+    final Map<String, dynamic> options;
+    if (widget.useSourceTheme) {
+      // Only pass bg (for page background) and non-color options.
+      // Color styling comes from the diagram's own inline style directives.
+      options = {
+        'bg': bgHex,
+        'font': widget.font,
+        'padding': widget.padding.toInt(),
+        'transparent': widget.transparent,
+      };
+    } else {
+      options = {
         ...widget.colors.toMap(),
         'font': widget.font,
         'padding': widget.padding.toInt(),
         'transparent': widget.transparent,
-      },
+      };
+    }
+    final msg = jsonEncode({
+      'action': 'render',
+      'source': widget.source,
+      'bg': bgHex,
+      'options': options,
     });
 
     _iframe.contentWindow?.postMessage(msg.toJS, '*'.toJS);
